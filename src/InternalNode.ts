@@ -1,4 +1,4 @@
-type NodeId = number;
+import { NodeId } from "./types";
 
 export class InternalNode {
   keys: number[];
