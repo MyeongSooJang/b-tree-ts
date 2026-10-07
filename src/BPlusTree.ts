@@ -21,7 +21,7 @@ export class BplusTree {
     }
 
     insert(key: number, value: string): void {
-        const leafId = this.findLeaf(key);
+        const { leafId, path } = this.findLeaf(key);
         const leaf = this.nodes.get(leafId) as LeafNode;
 
         let i = 0;
@@ -37,23 +37,25 @@ export class BplusTree {
         }
 
         if (leaf.keys.length > this.size) {
-            this.splitLeaf(leaf);
+            this.splitLeaf(leaf, leafId, path);
         }
 
     }
 
-    findLeaf(key: number): NodeId {
+    findLeaf(key: number): { leafId: NodeId, path: NodeId[] } {
         let currentId = this.root;
+        const path: NodeId[] = [];
         while (true) {
             const current = this.nodes.get(currentId)!;
             if (current instanceof LeafNode) {
-                return currentId;
+                return { leafId: currentId, path };
             }
+            path.push(currentId);
             currentId = current.findChild(key);
         }
     }
 
-    splitLeaf(leaf: LeafNode): void {
+    splitLeaf(leaf: LeafNode, leafId: number, path: NodeId[]): void {
         const mid = Math.floor(leaf.keys.length / 2);
 
         const rightKeys = leaf.keys.slice(mid);
@@ -63,11 +65,16 @@ export class BplusTree {
         leaf.values = leaf.values.slice(0, mid);
 
         const newLeafId = this.nodes.size;
-        const newLeaf = new LeafNode(rightKeys,rightValues,null);
+        const newLeaf = new LeafNode(rightKeys, rightValues, null);
 
         leaf.next = newLeafId;
+        this.nodes.set(newLeafId, newLeaf);
 
-       
+        if (path.length == 0) {
+            createInternalNode(rightKeys[0]!, leafId, newLeafId);
+        }
+
+
     }
 
 }
