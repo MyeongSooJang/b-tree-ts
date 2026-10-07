@@ -72,8 +72,11 @@ export class BplusTree {
 
         if (path.length == 0) {
             createInternalNode(rightKeys[0]!, leafId, newLeafId);
+        } else {
+            const parentId = path.pop()!;
+            const parentInternalNode = this.nodes.get(parentId) as InternalNode;
+            parentInternalNode.insertKey(rightKeys[0]!, newLeafId);
         }
-
 
     }
 
